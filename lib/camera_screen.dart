@@ -77,8 +77,8 @@ class _CameraScreenState extends State {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Click To Share'),
-        backgroundColor: Colors.blueGrey,
+        title: const Text("Take today' workout photo"),
+        backgroundColor: Colors.blue,
       ),
       body: Container(
         child: SafeArea(
@@ -136,7 +136,7 @@ class _CameraScreenState extends State {
           children: [
             FloatingActionButton(
                 child: Icon(Icons.camera),
-                backgroundColor: Colors.blueGrey,
+                backgroundColor: Colors.blue,
                 onPressed: () {
                   _onCapturePressed(context);
                 })

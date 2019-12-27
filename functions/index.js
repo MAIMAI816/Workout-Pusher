@@ -13,3 +13,17 @@ if (
 ) {
   require("./getDayWorkoutData.js")(exports);
 }
+
+if (
+  !process.env.FUNCTION_NAME ||
+  process.env.FUNCTION_NAME === "getExercises"
+) {
+  require("./getExercises.js")(exports);
+}
+
+if (
+  !process.env.FUNCTION_NAME ||
+  process.env.FUNCTION_NAME === "addDayWorkout"
+) {
+  require("./addDayWorkout.js")(exports);
+}

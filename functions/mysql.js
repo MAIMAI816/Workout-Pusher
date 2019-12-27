@@ -1,61 +1,65 @@
+const functions = require("firebase-functions");
 var mysql = require("mysql");
 
-exports.query = (sql = "", par = [], callback) => {
-  var mode = "no-local";
+module.exports.query = function(sql = "", par = [], callback) {
+  // var con = mysql.createConnection({
+  //   host: "workout-pusher-263101:us-central1:workout-pusher",
+  //   user: "root",
+  //   password: "mai",
+  //   database: "workout-pusher"
+  // });
+
+  // var mode = "localno";
 
   //リモート環境の場合
-  if (mode !== "local") {
-    const connectionName = "ec2-3-134-78-242.us-east-2.compute.amazonaws.com";
-    const dbUser = "root";
-    const dbPassword = "n";
-    const dbName = "workout-pusher";
+  const connectionName = "workout-pusher:us-central1:workout-pusher";
+  const dbUser = "mai";
+  const dbPassword = "kerochi";
+  const dbName = "workout-pusher";
 
-    const mysqlConfig = {
-      connectionLimit: 1,
-      user: dbUser,
-      password: dbPassword,
-      database: dbName
-    };
+  const mysqlConfig = {
+    connectionLimit: 1,
+    user: dbUser,
+    password: dbPassword,
+    database: dbName
+  };
 
-    if (process.env.NODE_ENV === "production") {
-      mysqlConfig.socketPath = `/cloudsql/${connectionName}`;
-    }
-
-    let mysqlPool;
-
-    if (!mysqlPool) {
-      mysqlPool = mysql.createPool(mysqlConfig);
-    }
-
-    mysqlPool.query(sql, par, (err, results) => {
-      if (err) {
-        //console.error(err);
-        //res.status(500).send(err);
-        //reject(err);
-        return callback(err, null);
-      } else {
-        //res.send(JSON.stringify(results));
-        //resolve(results);
-        return callback(null, results);
-      }
-    });
+  if (process.env.NODE_ENV === "production") {
+    mysqlConfig.socketPath = `/cloudsql/${connectionName}`;
   }
-  //ローカル環境の場合
-  else {
-    var connection = mysql.createConnection({
-      host: "34.69.70.83",
-      user: "takuro",
-      password: "yota357",
-      database: "thatsme"
-    });
 
-    connection.connect();
+  let mysqlPool;
 
-    connection.query(sql, par, (err, results) => {
-      if (err) return callback(err, null);
-      //console.log(results);
+  if (!mysqlPool) {
+    mysqlPool = mysql.createPool(mysqlConfig);
+  }
+
+  mysqlPool.query(sql, par, (err, results) => {
+    if (err) {
+      //console.error(err);
+      //res.status(500).send(err);
+      //reject(err);
+      return callback(err, null);
+    } else {
+      //res.send(JSON.stringify(results));
+      //resolve(results);
       return callback(null, results);
-    });
-    connection.end();
-  }
+    }
+  });
+
+  // con.connect(function(err) {
+  //   if (err) throw err;
+  //   console.log("Connected!");
+  //   con.query(sql, function(err, results) {
+  //     if (err) {
+  //       //console.error(err);
+  //       //res.status(500).send(err);
+  //       //reject(err);
+  //       return callback(err, null);
+  //     } else {
+  //       //res.send(JSON.stringify(results));
+  //       //resolve(results);
+  //       return callback(null, results);
+  //     }
+  //   });
 };

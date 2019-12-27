@@ -1,9 +1,9 @@
 class Workouts {
   String title;
-  int numOfSets;
+  int rep;
   int sets;
   int weight;
-  bool selected;
+  bool selected = false;
 
-  Workouts(this.title, this.numOfSets, this.sets, this.weight, this.selected);
+  Workouts({this.title, this.rep, this.sets, this.weight, this.selected});
 }

@@ -32,7 +32,8 @@ class _PenguinPageState extends State<PenguinPage> {
             Text("Today's your penguin",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
             Container(
-                width: 350, child: Image.asset('assets/penguin/penguin.png')),
+                width: 350,
+                child: Image.asset('assets/penguin/neutral_penguin.png')),
             SizedBox(
               height: 50,
             ),
@@ -40,7 +41,7 @@ class _PenguinPageState extends State<PenguinPage> {
               width: 300,
               alignment: Alignment.center,
               child: Text(
-                  "You  didn't work out today, but it's ok, because it's Sunday and Mai didn't want to go to swimming. But let's plan your next week workout schedule!",
+                  "You  didn't work out today, but it's ok, because it's Christmas... But let's plan your next week workout schedule!",
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
             )
           ],

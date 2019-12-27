@@ -1,11 +1,6 @@
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:workout_pusher/chooseExercise.dart';
 import 'package:workout_pusher/dayWorkouts.dart';
 import 'package:workout_pusher/main.dart';
 import 'package:workout_pusher/penguin.dart';
@@ -50,7 +45,7 @@ class _TimelinePageState extends State<TimelinePage> {
     var nextScreen;
     print(index);
     if (index == 0) {
-      nextScreen = ChooseExercisePage();
+      nextScreen = MyHomePage();
     } else if (index == 1) {
       nextScreen = TimelinePage();
     } else if (index == 2) {
@@ -66,7 +61,7 @@ class _TimelinePageState extends State<TimelinePage> {
         child: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
       Padding(
         padding: EdgeInsets.all(16.0),
-        child: Text(new DateFormat("yyyy-MM-dd").format(dayWorkout.date),
+        child: Text(dayWorkout.date,
             textAlign: TextAlign.left,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
       ),
@@ -92,24 +87,29 @@ class _TimelinePageState extends State<TimelinePage> {
   }
 
   _getWorkoutData() async {
-    final HttpsCallable callable = CloudFunctions.instance.getHttpsCallable(
-      functionName: 'getDayWorkoutData',
-    );
+    await _getWorkoutDataFromDB().then((documents) {
+      List<Workouts> workouts;
+      documents.forEach((document) {
+        // document['workouts'].forEach((workout) {
+        //   print(workout.get.then((data1) {
+        //     data1.forEach((data) {
+        //       print(data);
+        //     });
+        //   }));
+        //   print(workout.toString());
+        //   // workouts.add(new Workouts(workout['title'], workout['numOfSets'],
+        //   //     workout['sets'], workout['weight'], false));
+        // });
+        dayWorkouts.add(new DayWorkout(
+            document['date'].toString(), [], document['imgUrl']));
+      });
+    });
 
-    //パラメーターを渡す
-    dynamic resp = await callable.call(<String, dynamic>{
-      'data': "d",
-    });
-    print('getworkout data called and response:');
-    print(resp.data);
-    var dayWorkoutData = jsonDecode(resp.data);
-    dayWorkoutData.forEach((dayWorkout) {
-      var dayWorkoutObj = new DayWorkout(DateTime.now(), [], "");
-      dayWorkoutObj.date = DateTime.parse(dayWorkout['date']);
-      dayWorkoutObj.imgUrl = dayWorkout['imgUrl'];
-      dayWorkouts.add(dayWorkoutObj);
-    });
-    return dayWorkouts;
+    return ListView.builder(
+        itemCount: dayWorkouts.length,
+        itemBuilder: (context, index) {
+          return buildRow(dayWorkouts[index]);
+        });
   }
 
   Widget _myListView(BuildContext context, List<Workouts> workouts) {
@@ -125,7 +125,7 @@ class _TimelinePageState extends State<TimelinePage> {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               SizedBox(width: 10),
               Text(
-                  workouts[index].rep.toString() +
+                  workouts[index].numOfSets.toString() +
                       ' sets ' +
                       workouts[index].sets.toString() +
                       ' reps ' +
@@ -143,6 +143,35 @@ class _TimelinePageState extends State<TimelinePage> {
     );
   }
 
+  // [
+  //   new DayWorkout(
+  //       'December 16th',
+  //       [
+  //         new Workouts('Push-up', 3, 30, 100, false),
+  //         new Workouts('Crunch', 3, 30, 100, false),
+  //         new Workouts('Dumobell rows', 3, 30, 100, false),
+  //         new Workouts('Squats', 3, 30, 100, false)
+  //       ],
+  //       '20191222.JPG'),
+  //   new DayWorkout(
+  //       'December 17th',
+  //       [
+  //         new Workouts('Push-up', 3, 30, 100, false),
+  //         new Workouts('Crunch', 3, 30, 100, false),
+  //         new Workouts('Dumobell rows', 3, 30, 100, false),
+  //         new Workouts('Squats', 3, 30, 100, false)
+  //       ],
+  //       '20191222.JPG'),
+  //   new DayWorkout(
+  //       'December 20th',
+  //       [
+  //         new Workouts('Push-up', 3, 30, 100, false),
+  //         new Workouts('Crunch', 3, 30, 100, false),
+  //         new Workouts('Dumobell rows', 3, 30, 100, false),
+  //         new Workouts('Squats', 3, 30, 100, false)
+  //       ],
+  //       '20191222.JPG'),
+  // ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -163,11 +192,7 @@ class _TimelinePageState extends State<TimelinePage> {
                   if (snapshot.hasError)
                     return new Text('Error: ${snapshot.error}');
                   else
-                    return ListView.builder(
-                        itemCount: snapshot.data.length,
-                        itemBuilder: (context, index) {
-                          return buildRow(snapshot.data[index]);
-                        });
+                    return new Text('Result: ${snapshot.data}');
               }
             }));
   }

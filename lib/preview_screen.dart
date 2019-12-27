@@ -30,9 +30,13 @@
 
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:path/path.dart';
+import 'package:workout_pusher/timeline.dart';
 
 class PreviewImageScreen extends StatefulWidget {
   final String imagePath;
@@ -44,12 +48,34 @@ class PreviewImageScreen extends StatefulWidget {
 }
 
 class _PreviewImageScreenState extends State<PreviewImageScreen> {
+  void _pickSaveImage(context) {
+    String fileName =
+        new DateFormat("yyyy-MM-dd").format(DateTime.now()) + '.jpg';
+    StorageReference ref = FirebaseStorage.instance.ref().child(fileName);
+    StorageUploadTask uploadTask = ref.putFile(File(widget.imagePath));
+    _addDatabase(fileName, context);
+  }
+
+  Future<Uri> _addDatabase(String fileName, BuildContext context) async {
+    final HttpsCallable callable = CloudFunctions.instance.getHttpsCallable(
+      functionName: 'addDayWorkout',
+    );
+    dynamic resp = await callable.call(<String, dynamic>{
+      'date': DateTime.now().toString(),
+      'imgUrl': fileName
+    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TimelinePage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Preview'),
-        backgroundColor: Colors.blueGrey,
+        backgroundColor: Colors.blue,
       ),
       body: Container(
         child: Column(
@@ -62,18 +88,21 @@ class _PreviewImageScreenState extends State<PreviewImageScreen> {
             Flexible(
               flex: 1,
               child: Container(
-                padding: EdgeInsets.all(60.0),
-                child: RaisedButton(
-                  onPressed: () {
-                    getBytesFromFile().then((bytes) {
-                      Share.file('Share via:', basename(widget.imagePath),
-                          bytes.buffer.asUint8List(), 'image/png');
-                    });
-                  },
-                  child: Text('Share'),
-                ),
-              ),
-            ),
+                  padding: EdgeInsets.all(60.0),
+                  child: FlatButton(
+                      child: Text(
+                        'Save workout plan',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700),
+                      ),
+                      color: Colors.blue,
+                      padding: EdgeInsets.all(15.0),
+                      onPressed: () {
+                        _pickSaveImage(context);
+                      })),
+            )
           ],
         ),
       ),
